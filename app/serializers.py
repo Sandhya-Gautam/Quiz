@@ -27,6 +27,7 @@ class RecordSerializer(serializers.ModelSerializer):
         field=['right_count',"wrong_count"]
 
 class QuestionSerializer(serializers.ModelSerializer):
+    ques=serializers.StringRelatedField()
     class Meta:
         model=Answers
-        fields=['question', 'answer','label' ]
+        fields=['ques', 'answer','label']
