@@ -27,7 +27,12 @@ def login(request):
             return Response({'msg':'user login sucessful'}, status=status.HTTP_200_OK)
         return Response({'msg':'authentication error'}, status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+@api_view(['GET'])
+def get_question(request):
+    serializer=QuestionSerializer(data=request.data)
+    # if serializer.is_valid():
+           
 
 
 
