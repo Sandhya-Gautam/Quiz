@@ -2,12 +2,12 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, username, password=None,re_entered_password=None, **extra_fields):
+    def create_user(self, email, username, password=None,confirm_password=None, **extra_fields):
         if not email:
             raise ValueError('Email must be provided')
         if not username:
             raise ValueError('Username must be provided')
-        if  password != re_entered_password:
+        if  password != confirm_password:
             raise ValueError("Two password didnt match")
         
         user=self.model(
@@ -44,7 +44,7 @@ class User(AbstractUser):
         return self.email
 
 class Records(models.Model):
-    user=models.OneToOneField(User, on_delete=models.CASCADE)
+    related_user=models.OneToOneField(User, on_delete=models.CASCADE)
     right_count=models.IntegerField()
     wrong_count=models.IntegerField()
 
