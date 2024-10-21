@@ -21,7 +21,12 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = ["email", "password"]
 
 class RecordSerializer(serializers.ModelSerializer):
-
+    def update(self, instance, validated_data):
+        instance.right_count = validated_data.get('right_count', instance.right_count)
+        instance.wrong_count = validated_data.get('wrong_count', instance.wrong_count)
+        instance.save()
+        return instance
+    
     class Meta:
         model=Records
         field=['right_count',"wrong_count"]
