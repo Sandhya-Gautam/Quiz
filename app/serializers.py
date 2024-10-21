@@ -36,3 +36,4 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model=Answers
         fields=['ques', 'answer','label']
+

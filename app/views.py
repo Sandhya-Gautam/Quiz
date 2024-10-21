@@ -67,26 +67,45 @@ def get_question(request):
         return Response({"error": "No answer found for the selected question"}, status=status.HTTP_404_NOT_FOUND)
 
 
-# @permission_classes(IsAuthenticated)
-# @api_view(['POST'])
-# def check_answer
-
-
-@permission_classes(IsAuthenticated)   
+@permission_classes(IsAuthenticated)
 @api_view(['POST'])
-def update_records(request):
-    # import ipdb
-    # ipdb.set_trace()
+def check_answer(request):
+    answer=Answers.objects.get(id=request.data.get('id'))
+    print(answer)
     user=request.user
     if not user:
         return Response({"msg":"User not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    record,created=Records.objects.get_or_create(related_user=user,defaults={'right_count':request.data.get('right_count'), 'wrong_count':request.data.get('wrong_count')})
-    if not created:
-        record.right_count=request.data.get('right_count')
-        record.wrong_count=request.data.get('wrong_count')
+    label=answer.label
+    if label==1:
+        record,created=Records.objects.get_or_create(related_user=user,defaults={'right_count':'1', 'wrong_count':'0'})
+        if not created:
+            record.right_count+=1
+
+    else:
+        record,created=Records.objects.get_or_create(related_user=user,defaults={'right_count':'0', 'wrong_count':'1'})
+        if not created:
+            record.wrong_count+=1
     record.save()
     return Response({'msg':'record updated sucessfully'},status=status.HTTP_200_OK)
+
+
+
+
+# @permission_classes(IsAuthenticated)   
+# @api_view(['POST'])
+# def update_records(request):
+#     # import ipdb
+#     # ipdb.set_trace()
+#     user=request.user
+#     if not user:
+#         return Response({"msg":"User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+#     record,created=Records.objects.get_or_create(related_user=user,defaults={'right_count':request.data.get('right_count'), 'wrong_count':request.data.get('wrong_count')})
+#     if not created:
+#         record.right_count=request.data.get('right_count')
+#         record.wrong_count=request.data.get('wrong_count')
+#     record.save()
+#     return Response({'msg':'record updated sucessfully'},status=status.HTTP_200_OK)
     
 
 
