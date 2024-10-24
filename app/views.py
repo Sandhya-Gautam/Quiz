@@ -36,9 +36,6 @@ class UserLogin(APIView):
 
 class UserRegister(APIView):
     def post(self, request):
-        import ipdb
-
-        ipdb.set_trace()
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -79,7 +76,7 @@ class GetQuestion(APIView):
 class CheckAnswer(APIView):
     permission_classes([permissions.IsAuthenticated])
 
-    def post(self, request):
+    def put(self, request):
         answer = Answers.objects.get(id=request.data.get("id"))
         user = request.user
         if not user:
