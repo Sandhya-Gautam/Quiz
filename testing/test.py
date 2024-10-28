@@ -1,16 +1,24 @@
 import requests
+import pytest
 
 
-def test_login():
+@pytest.fixture
+def setup_data():
+    body={"email":"test@gmail.com", "password":"123"}
+    yield body
+    del body
+
+
+
+def test_login(setup_data):
     url = "http://127.0.0.1:8000/app/login/"
-    data = {"email": "test@gmail.com", "password": "123"}
-    response = requests.post(url, data=data)
+    response = requests.post(url, data=setup_data)
     assert response.status_code == 200
     assert response.headers["Content-Type"] == "application/json"
     data = response.json()
     assert "token" in data
     assert "msg" in data
-    assert "test" in data
+    assert data["msg"]=="user login sucessful"
 
 
 def test_register():
