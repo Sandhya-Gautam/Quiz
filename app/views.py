@@ -1,6 +1,7 @@
 import random
 
 from django.contrib.auth import authenticate
+from django.core.cache import cache
 from rest_framework import permissions, status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import permission_classes
@@ -13,6 +14,8 @@ from .serializers import (
     UserLoginSerializer,
     UserRegistrationSerializer,
 )
+from .task import calculate
+from django_q.tasks import async_task, result
 
 
 class UserLogin(APIView):
@@ -23,9 +26,10 @@ class UserLogin(APIView):
             password = serializer.validated_data.get("password")
             user = authenticate(email=email, password=password)
             if user:
+                value=cache.get('testing')
                 token, _created = Token.objects.get_or_create(user=user)
                 return Response(
-                    {"msg": "user login sucessful", "token": token.key},
+                    {"msg": "user login sucessful", "token": token.key, "cache_value":value},
                     status=status.HTTP_200_OK,
                 )
             return Response(
@@ -59,11 +63,18 @@ class GetQuestion(APIView):
                     {"error": "No answers found for the selected question"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-
             serializer = QuestionSerializer(answer, many=True)
+            
+            #implementing django_q task 
+
+            task_id=async_task(calculate)
+            task_response=result(task_id)
+
+            # implementing cache
+            cache.set('testing','ramdom testing', timeout=60*10)
 
             return Response(
-                {"question": question.question, "answers": serializer.data},
+                {"question": question.question, "answers": serializer.data, "task_response":task_response},
                 status=status.HTTP_200_OK,
             )
         except Answers.DoesNotExist:

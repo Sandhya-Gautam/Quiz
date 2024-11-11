@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "debug_toolbar",
     "django_crontab",
+    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -147,3 +148,24 @@ CRONJOBS = [
         ">>/home/sandhya/Desktop/Quiz/test.log 2>&1",
     )
 ]
+
+Q_CLUSTER = {
+    "name": "test_task",
+    "workers": 4,
+    "timeout": 60,
+    "retry": 95,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+    # "compress":True,
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/', 
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
