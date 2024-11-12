@@ -2,10 +2,13 @@ import random
 
 from django.contrib.auth import authenticate
 from django.core.cache import cache
+from django_q.tasks import async_task, result
 from rest_framework import permissions, status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import permission_classes
+from rest_framework.exceptions import Throttled
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.views import APIView
 
 from .models import Answers, Questions, Records
@@ -15,27 +18,35 @@ from .serializers import (
     UserRegistrationSerializer,
 )
 from .task import calculate
-from django_q.tasks import async_task, result
 
 
 class UserLogin(APIView):
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+
     def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.data.get("email")
-            password = serializer.validated_data.get("password")
-            user = authenticate(email=email, password=password)
-            if user:
-                value=cache.get('testing')
-                token, _created = Token.objects.get_or_create(user=user)
+        try:
+            serializer = UserLoginSerializer(data=request.data)
+            if serializer.is_valid():
+                email = serializer.data.get("email")
+                password = serializer.validated_data.get("password")
+                user = authenticate(email=email, password=password)
+                if user:
+                    value = cache.get("testing")
+                    token, _created = Token.objects.get_or_create(user=user)
+                    return Response(
+                        {
+                            "msg": "user login sucessful",
+                            "token": token.key,
+                            "cache_value": value,
+                        },
+                        status=status.HTTP_200_OK,
+                    )
                 return Response(
-                    {"msg": "user login sucessful", "token": token.key, "cache_value":value},
-                    status=status.HTTP_200_OK,
+                    {"msg": "authentication error"}, status=status.HTTP_400_BAD_REQUEST
                 )
-            return Response(
-                {"msg": "authentication error"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Throttled as e:
+            return Response({"error": "request limit exceeded", "default": e})
 
 
 class UserRegister(APIView):
@@ -64,17 +75,21 @@ class GetQuestion(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
             serializer = QuestionSerializer(answer, many=True)
-            
-            #implementing django_q task 
 
-            task_id=async_task(calculate)
-            task_response=result(task_id)
+            # implementing django_q task
+
+            task_id = async_task(calculate)
+            task_response = result(task_id)
 
             # implementing cache
-            cache.set('testing','ramdom testing', timeout=60*10)
+            cache.set("testing", "ramdom testing", timeout=60 * 10)
 
             return Response(
-                {"question": question.question, "answers": serializer.data, "task_response":task_response},
+                {
+                    "question": question.question,
+                    "answers": serializer.data,
+                    "task_response": task_response,
+                },
                 status=status.HTTP_200_OK,
             )
         except Answers.DoesNotExist:
