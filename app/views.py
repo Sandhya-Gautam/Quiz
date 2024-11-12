@@ -2,6 +2,8 @@ import random
 
 from django.contrib.auth import authenticate
 from django.core.cache import cache
+from django.core.mail import BadHeaderError,send_mail
+from django.conf  import settings
 from django_q.tasks import async_task, result
 from rest_framework import permissions, status
 from rest_framework.authtoken.models import Token
@@ -32,6 +34,13 @@ class UserLogin(APIView):
                 user = authenticate(email=email, password=password)
                 if user:
                     value = cache.get("testing")
+                    subject='login alert'
+                    message='A new login detected'
+                    sender=settings.EMAIL_HOST_USER
+                    try:
+                        send_mail(subject,message,sender, [email])
+                    except BadHeaderError:
+                        return Response('mail sending error')
                     token, _created = Token.objects.get_or_create(user=user)
                     return Response(
                         {
@@ -50,15 +59,19 @@ class UserLogin(APIView):
 
 
 class UserRegister(APIView):
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"msg": "user registered sucessfully"}, status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    throttle_classes= [UserRateThrottle, AnonRateThrottle]
 
+    def post(self, request):
+        try:
+            serializer = UserRegistrationSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"msg": "user registered sucessfully"}, status=status.HTTP_201_CREATED
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Throttled:
+            return Response({'error':'request limit exceeded'})
 
 class GetQuestion(APIView):
     permission_classes = [permissions.IsAuthenticated]
