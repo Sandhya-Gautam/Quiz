@@ -136,3 +136,9 @@ class CheckAnswer(APIView):
         return Response(
             {"msg": "record updated sucessfully"}, status=status.HTTP_200_OK
         )
+
+class GetScore(APIView):
+    def get(self,request):
+        user=request.user
+        record=Records.objects.get(related_user=user)
+        return Response({'right_count':record.right_count,'wrong_count':record.wrong_count})

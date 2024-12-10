@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="./style.css">
+    
+
+</head>
+
+<body onload="getScore()">
+    <div class="container">
+        <nav class="header">
+            <div class="logo">
+                <img src="./images/quiz.png" alt="logo">
+            </div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="./docs.html">Docs</a></li>
+                <li id="score"><span></span><span></span></li>
+                </ul>
+        </nav>
+        <main>
+            <div id="content">
+                <p>Test Your Knowledge <br>with <span style="color: rgb(59, 37, 31);"><b>Fun</b></span></p>
+                <button id="start_game" onclick="startGame()">Start Quiz</button>
+            </div>
+            <div class="playground" id="playground">
+                <div class="center">
+                    <h1 id="questionSec"></h1>
+                    <ul id="answerOption">
+                    </ul>
+                </div>
+            </div>
+            
+        </main>
+        <footer>
+            <p>Designed and created &copy; 2020 Quiz</p>
+        </footer>
+    </div>
+</body>
+<script src="./script.js" >
+</script>
+</html>

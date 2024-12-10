@@ -50,9 +50,11 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "django_crontab",
     "django_q",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,6 +64,13 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:5500"
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "Quiz.urls"
 
@@ -143,11 +152,11 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "10/day", "user": "10/day"},
+    # "DEFAULT_THROTTLE_CLASSES": [
+    #     "rest_framework.throttling.AnonRateThrottle",
+    #     "rest_framework.throttling.UserRateThrottle",
+    # ],
+    # "DEFAULT_THROTTLE_RATES": {"anon": "10/day", "user": "10/day"},
 }
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -161,16 +170,16 @@ CRONJOBS = [
     )
 ]
 
-Q_CLUSTER = {
-    "name": "test_task",
-    "workers": 4,
-    "timeout": 60,
-    "retry": 95,
-    "queue_limit": 50,
-    "bulk": 10,
-    "orm": "default",
-    # "compress":True,
-}
+# Q_CLUSTER = {
+#     "name": "test_task",
+#     "workers": 4,
+#     "timeout": 60,
+#     "retry": 95,
+#     "queue_limit": 50,
+#     "bulk": 10,
+#     "orm": "default",
+#     # "compress":True,
+# }
 
 CACHES = {
     "default": {
